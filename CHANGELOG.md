@@ -6,3 +6,8 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## Unreleased
+
+<small>[Compare with latest](https://github.com/ydethe/directus_sync/compare/e1d751e937a90fc2a5bf714cc7ec4910d99f1d3c...HEAD)</small>
+
+<!-- insertion marker -->
