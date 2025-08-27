@@ -32,3 +32,21 @@ class Contact(BaseModel):
     Photo: str
     Directus_User: str | None
     Adresses: List[int]
+
+
+class Coordinate(BaseModel):
+    type: str
+    coordinates: List[float]
+
+
+class Adresse(BaseModel):
+    id: int
+    user_created: str
+    date_created: datetime
+    user_updated: str
+    date_updated: datetime
+    Adresse: str
+    Code_postal: str
+    Ville: str
+    Pays: str
+    Coordonnees: Coordinate
