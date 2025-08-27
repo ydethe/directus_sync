@@ -1,12 +1,7 @@
-import requests
-
-from .config import Config
+from .models import Config
+from .directus_backend import read_contacts
 
 
 def export(config: Config):
-    # https://directus.io/docs/getting-started/use-the-api
-    res = requests.get(
-        f"{config.directus_url}/Contacts",
-        headers={"Authorization": f"Bearer {config.directus_token}"},
-    )
-    print(res.json())
+    for contact in read_contacts(config):
+        print(contact)

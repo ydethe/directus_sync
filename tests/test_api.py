@@ -5,7 +5,7 @@ import yaml
 from yaml import BaseLoader
 
 from directus_sync.directus_sync import export
-from directus_sync.config import Config
+from directus_sync.models import Config
 
 
 class TestDirectusSync(unittest.TestCase):
