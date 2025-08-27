@@ -14,12 +14,15 @@ class Config(BaseSettings):
     directus_token: str
 
 
-class Contact(BaseModel):
+class BaseDirectusModel(BaseModel):
     id: int
     user_created: str
     date_created: datetime
-    user_updated: str
-    date_updated: datetime
+    user_updated: str | None
+    date_updated: datetime | None
+
+
+class Contact(BaseDirectusModel):
     Nom: str
     Prenom: str
     Particule: str
@@ -39,14 +42,46 @@ class Coordinate(BaseModel):
     coordinates: List[float]
 
 
-class Adresse(BaseModel):
-    id: int
-    user_created: str
-    date_created: datetime
-    user_updated: str
-    date_updated: datetime
+class Adresse(BaseDirectusModel):
     Adresse: str
     Code_postal: str
     Ville: str
     Pays: str
     Coordonnees: Coordinate
+
+
+class ContactsAdresse(BaseModel):
+    id: int
+    Contacts_id: int
+    Adresse_id: int
+    Type: str
+
+
+class Experience(BaseDirectusModel):
+    Contact: int
+    Type: str
+    Organisation: int
+    Date_debut: date
+    Date_fin: date | None
+    Intitule: str
+    Description: str | None
+
+
+class Organisation(BaseDirectusModel):
+    Nom: str
+    Site_web: str | None
+    Type: str
+    Adresse: List[int]
+
+
+class OrganisationsAdresse(BaseModel):
+    id: int
+    Organisation_id: int
+    Adresse_id: int
+
+
+class Telephone(BaseDirectusModel):
+    Telephone: str
+    Contact: int
+    Prefere: bool
+    Type: str
