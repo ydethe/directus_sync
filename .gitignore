@@ -14,7 +14,7 @@ venv
 .pdm.toml
 .vscode
 data
-dev.yml
+tests/*.yml
 .pdm-python
 *.whl
 requirements.txt
