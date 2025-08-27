@@ -8,7 +8,7 @@ from directus_sync.directus_sync import export
 from directus_sync.config import Config
 
 
-class TestIMAPSync(unittest.TestCase):
+class TestDirectusSync(unittest.TestCase):
     def test_sync_all(self):
         with open("tests/prod.yml", "r") as f:
             dat = yaml.load(f, Loader=BaseLoader)
@@ -17,6 +17,6 @@ class TestIMAPSync(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    a = TestIMAPSync()
+    a = TestDirectusSync()
 
     a.test_sync_all()
