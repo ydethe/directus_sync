@@ -1,5 +1,5 @@
 from datetime import date, datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 from pydantic import HttpUrl, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -106,14 +106,15 @@ class Contact(BaseDirectusModel):
     Prenom: str
     Particule: str
     Civilite: str
-    Nom_de_naissance: str | None
+    Nom_de_naissance: Optional[str] = ""
     Date_de_naissance: date
-    Site_web: str
-    Profile_LinkedIn: str
-    Notes: str | None
-    Photo: str
-    Directus_User: str | None
-    Adresses: List[int]
+    Site_web: Optional[str] = ""
+    Profile_LinkedIn: Optional[str] = ""
+    Notes: Optional[str] = ""
+    Photo: Optional[str] = ""
+    Photo_Content: Optional[bytes] = b""
+    Directus_User: Optional[str] = ""
+    Adresses: List[int] = []
 
     def to_vcard(
         self,
@@ -168,6 +169,7 @@ class Contact(BaseDirectusModel):
                     break
 
         vcard = VCard(
+            prodid=f"{self.id}",
             fn=f"{self.Prenom}{self.Particule}{self.Nom}",
             n=Name(
                 family=f"{self.Particule}{self.Nom}".strip(),

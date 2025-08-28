@@ -17,6 +17,22 @@ from .models import (
 T = TypeVar("T")
 
 
+def request_asset(config: Config, asset_id: str | None) -> bytes:
+    if asset_id is None:
+        return b""
+
+    # https://directus.io/docs/getting-started/use-the-api
+    res = requests.get(
+        f"{config.directus_url}/assets/{asset_id}",
+        headers={"Authorization": f"Bearer {config.directus_token}"},
+    )
+
+    if res.status_code == 200:
+        return res.content
+    else:
+        return b""
+
+
 def request_collection(config: Config, collection: str) -> List[Dict[Any, Any]]:
     # https://directus.io/docs/getting-started/use-the-api
     res = requests.get(
@@ -39,6 +55,9 @@ def read_item(
 
 def read_contacts(config: Config) -> Iterator[Contact]:
     for contact in read_item(config, collection="Contacts", model_factory=Contact.model_validate):
+        contact.Photo_Content = request_asset(config, contact.Photo)
+        print(contact)
+
         yield contact
 
 
