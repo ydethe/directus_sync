@@ -1,3 +1,4 @@
+import base64
 from datetime import date, datetime
 from typing import Dict, List, Optional
 from pydantic import HttpUrl, BaseModel
@@ -184,4 +185,9 @@ class Contact(BaseDirectusModel):
             title=self.Civilite,
             role=role,
         )
+        if self.Photo_Content is not None and len(self.Photo_Content) > 0:
+            b64_photo = base64.b64encode(self.Photo_Content).decode("ascii")
+
+            vcard.photo = f"data:image/jpeg;base64,{b64_photo}"
+
         return vcard

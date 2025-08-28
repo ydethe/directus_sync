@@ -36,7 +36,7 @@ def request_asset(config: Config, asset_id: str | None) -> bytes:
 def request_collection(config: Config, collection: str) -> List[Dict[Any, Any]]:
     # https://directus.io/docs/getting-started/use-the-api
     res = requests.get(
-        f"{config.directus_url}/{collection}",
+        f"{config.directus_url}/items/{collection}",
         headers={"Authorization": f"Bearer {config.directus_token}"},
     )
     data = res.json()
@@ -56,7 +56,6 @@ def read_item(
 def read_contacts(config: Config) -> Iterator[Contact]:
     for contact in read_item(config, collection="Contacts", model_factory=Contact.model_validate):
         contact.Photo_Content = request_asset(config, contact.Photo)
-        print(contact)
 
         yield contact
 

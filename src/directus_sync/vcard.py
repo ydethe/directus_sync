@@ -135,7 +135,7 @@ class VCard(BaseModel):
 
     n: Optional[Name] = None
     nickname: Optional[List[str]] = None
-    photo: Optional[AnyUrl] = None
+    photo: Optional[str] = None
     bday: Optional[Union[date, datetime, str]] = None
     anniversary: Optional[Union[date, datetime, str]] = None
     gender: Optional[Gender] = None
