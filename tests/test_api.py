@@ -7,7 +7,7 @@ from yaml import BaseLoader
 from directus_sync.directus_backend import read_contacts
 from directus_sync.directus_sync import export
 from directus_sync.models import Config
-from directus_sync.vcard import Name, VCard
+from directus_sync.vcard import Gender, Name, VCard
 
 
 class TestDirectusSync(unittest.TestCase):
@@ -24,7 +24,7 @@ class TestDirectusSync(unittest.TestCase):
                     prefixes=[contact.Civilite],
                 ),
                 anniversary=contact.Date_de_naissance,
-                # gender: Optional[Gender] = None
+                gender=Gender.M if contact.Civilite in ["Mr", "Frère", "Père"] else Gender.F,
                 # adr: Optional[List[Address]] = None
                 # tel: Optional[List[Telephone]] = None
                 # email: Optional[List[Email]] = None

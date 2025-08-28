@@ -236,7 +236,7 @@ class VCard(BaseModel):
         if self.anniversary:
             lines.append(f"ANNIVERSARY:{self.anniversary}")
         if self.gender:
-            lines.append(f"GENDER:{self.gender.value}")
+            lines.append(f"GENDER:{self.gender}")
         if self.adr:
             for a in self.adr:
                 parts = [
