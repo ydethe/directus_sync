@@ -65,8 +65,6 @@ class Telephone(BaseModel):
     @field_validator("value")
     @classmethod
     def validate_tel(cls, v: str) -> str:
-        if not isinstance(v, str):
-            raise TypeError("tel must be a string")
         if not TEL_URI_RE.match(v):
             raise ValueError("tel must be a RFC3966 tel URI or E.164-like number")
         if not v.lower().startswith("tel:"):
