@@ -6,6 +6,7 @@ from .models import (
     Contact,
     Adresse,
     ContactsAdresse,
+    Email,
     Experience,
     Organisation,
     OrganisationsAdresse,
@@ -77,3 +78,8 @@ def read_telephone(config: Config) -> Iterator[Telephone]:
         config, collection="Telephone", model_factory=Telephone.model_validate
     ):
         yield telephone
+
+
+def read_email(config: Config) -> Iterator[Email]:
+    for email in read_item(config, collection="Email", model_factory=Email.model_validate):
+        yield email
