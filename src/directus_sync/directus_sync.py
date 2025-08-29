@@ -168,13 +168,13 @@ class DirectusDatabase(BaseModel):
                 if orgid is None:
                     orga = Organisation(
                         Nom=icontact.companyName,
-                        Type="Entreprise",  # TODO Check enum
+                        Type="Entreprise",
                     )
                     orgid = self.insert_organisation(orga)
 
                 expe = Experience(
                     Contact=cid,
-                    Type="Entreprise",  # TODO Check enum
+                    Type="Professionnel",
                     Organisation=orgid,
                     Intitule=icontact.jobTitle,
                 )
