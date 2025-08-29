@@ -11,6 +11,7 @@ description = ""
 dependencies = [
     "pydantic-settings>=2.10.1",
     "pydantic[email]>=2.11.7",
+    "pyicloud>=2.0.2",
     "requests>=2.32.5",
 ]
 

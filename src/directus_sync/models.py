@@ -13,11 +13,11 @@ from .vcard import Email as VEmail
 class Config(BaseSettings):
     model_config = SettingsConfigDict(
         case_sensitive=True,
-        env_file_encoding="utf-8",
     )
 
     directus_url: HttpUrl
     directus_token: str
+    icloud_account: str
 
 
 class BaseDirectusModel(BaseModel):
@@ -191,3 +191,74 @@ class Contact(BaseDirectusModel):
             vcard.photo = f"data:image/jpeg;base64,{b64_photo}"
 
         return vcard
+
+
+class ICloudFieldLabel(BaseModel):
+    field: str
+    label: Optional[str] = "HOME"
+
+
+class ICloudUrl(ICloudFieldLabel):
+    pass
+
+
+class ICloudProfile(BaseModel):
+    pass
+
+
+class ICloudphones(ICloudFieldLabel):
+    pass
+
+
+class ICloudEmail(ICloudFieldLabel):
+    pass
+
+
+class ICloudAddresseField(BaseModel):
+    country: Optional[str] = "France"
+    city: Optional[str] = ""
+    countryCode: Optional[str] = "fr"
+    street: Optional[str] = ""
+    postalCode: Optional[str] = ""
+
+
+class ICloudAddresse(BaseModel):
+    field: ICloudAddresseField
+    label: Optional[str] = "HOME"
+
+
+class ICloudRelatedName(ICloudFieldLabel):
+    pass
+
+
+class ICloudDate(BaseModel):
+    field: date
+    label: Optional[str] = "HOME"
+
+
+class ICloudPhoto(BaseModel):
+    url: str
+
+
+class ICloudContact(BaseModel):
+    nickName: Optional[str] = ""
+    isCompany: Optional[bool] = False
+    isGuardianApproved: Optional[bool] = True
+    streetAddresses: Optional[List[ICloudAddresse]] = []
+    urls: Optional[List[ICloudUrl]] = []
+    normalized: Optional[str] = ""
+    jobTitle: Optional[str] = ""
+    phones: Optional[List[ICloudphones]] = []
+    etag: Optional[str] = ""
+    emailAddresses: Optional[List[ICloudEmail]] = []
+    middleName: Optional[str] = ""
+    contactId: Optional[str] = ""
+    companyName: Optional[str] = ""
+    relatedNames: Optional[List[ICloudRelatedName]] = []
+    lastName: Optional[str] = ""
+    firstName: Optional[str] = ""
+    photo: Optional[ICloudPhoto | None] = None
+    notes: Optional[str] = ""
+    birthday: Optional[date | None] = None
+    dates: Optional[List[ICloudDate]] = []
+    whitelisted: Optional[bool] = True
