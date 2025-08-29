@@ -59,6 +59,8 @@ class DirectusDatabase(BaseModel):
                 Site_web=filtered_url[0] if len(filtered_url) > 0 else "",
                 Notes=icontact.notes,
                 Photo=icontact.photo.url if icontact.photo is not None else None,
+                # TODO Download photo raw bytes
+                # TODO Fill other directus tables
                 # Adresses=[adr for adr in icontact.streetAddresses]
             )
 
