@@ -21,11 +21,11 @@ class Config(BaseSettings):
 
 
 class BaseDirectusModel(BaseModel):
-    id: int
-    user_created: str
-    date_created: datetime
-    user_updated: str | None
-    date_updated: datetime | None
+    id: Optional[int | None] = None
+    user_created: Optional[str | None] = None
+    date_created: Optional[datetime | None] = None
+    user_updated: Optional[str | None] = None
+    date_updated: Optional[datetime | None] = None
 
 
 class Coordinate(BaseModel):
@@ -108,7 +108,7 @@ class Contact(BaseDirectusModel):
     Particule: str
     Civilite: str
     Nom_de_naissance: Optional[str] = ""
-    Date_de_naissance: date
+    Date_de_naissance: Optional[date | None] = None
     Site_web: Optional[str] = ""
     Profile_LinkedIn: Optional[str] = ""
     Notes: Optional[str] = ""

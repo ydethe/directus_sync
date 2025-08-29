@@ -5,8 +5,8 @@ import yaml
 from yaml import BaseLoader
 
 from directus_sync.directus_sync import DirectusDatabase
-from directus_sync.models import Config
-from directus_sync.icloud_contacts import read_contacts
+from directus_sync.models import Config, Contact
+from directus_sync.icloud_contacts import read_icloud_contacts
 
 
 class TestDirectusSync(unittest.TestCase):
@@ -16,7 +16,7 @@ class TestDirectusSync(unittest.TestCase):
         config = Config.model_validate_json(json.dumps(dat))
 
         db = DirectusDatabase()
-        db.load_database(config)
+        db.load_from_directus(config)
 
         vcards = db.convert_contacts()
         print(vcards[0].to_vcard())
@@ -26,8 +26,12 @@ class TestDirectusSync(unittest.TestCase):
             dat = yaml.load(f, Loader=BaseLoader)
         config = Config.model_validate_json(json.dumps(dat))
 
-        contacts = read_contacts(config)
+        contacts = read_icloud_contacts(config)
         self.assertGreater(len(contacts), 0)
+
+        for icontact in contacts:
+            contact = Contact.from_icloud(icontact)
+            print(contact)
 
 
 if __name__ == "__main__":

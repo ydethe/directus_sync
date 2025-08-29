@@ -1,7 +1,8 @@
-from typing import Dict, List
+from typing import Dict, Iterator, List
 
 from pydantic import BaseModel
 
+from .icloud_contacts import read_icloud_contacts
 from .vcard import VCard
 from .models import (
     Adresse,
@@ -36,7 +37,32 @@ class DirectusDatabase(BaseModel):
     telephones: Dict[int, Telephone] = {}
     emails: Dict[int, Email] = {}
 
-    def load_database(self, config: Config):
+    def load_from_icloud(self, config: Config) -> Iterator[Contact]:
+        for icontact in read_icloud_contacts(config):
+            filtered_url: List[str]
+            if icontact.urls is None:
+                filtered_url = []
+            else:
+                filtered_url = [
+                    iurl.field for iurl in icontact.urls if not iurl.field.startswith("uphabit://")
+                ]
+
+            contact = Contact(
+                Nom=icontact.lastName if icontact.lastName is not None else "",
+                Prenom=icontact.firstName if icontact.firstName is not None else "",
+                Particule="",
+                Civilite="",
+                Nom_de_naissance="",
+                Date_de_naissance=icontact.birthday,
+                Site_web=filtered_url[0] if len(filtered_url) > 0 else "",
+                Notes=icontact.notes,
+                Photo=icontact.photo.url if icontact.photo is not None else None,
+                # Adresses=[adr for adr in icontact.streetAddresses]
+            )
+
+            yield contact
+
+    def load_from_directus(self, config: Config):
         for contact in read_contacts(config):
             self.contacts[contact.id] = contact
 
