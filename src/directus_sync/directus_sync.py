@@ -50,9 +50,9 @@ class DirectusDatabase(BaseModel):
             contact = Contact(
                 Nom=icontact.lastName if icontact.lastName is not None else "",
                 Prenom=icontact.firstName if icontact.firstName is not None else "",
-                # TODO: Improve Particule detection from iCloud
+                # TODO Improve Particule detection from iCloud
                 Particule="",
-                # TODO: Improve Civilite detection from iCloud
+                # TODO Improve Civilite detection from iCloud
                 Civilite="",
                 Nom_de_naissance="",
                 Date_de_naissance=icontact.birthday,
