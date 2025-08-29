@@ -26,7 +26,8 @@ class TestDirectusSync(unittest.TestCase):
         config = Config.model_validate_json(json.dumps(dat))
 
         db = DirectusDatabase()
-        for contact in db.load_from_icloud(config):
+        db.load_from_icloud(config)
+        for contact in db.contacts.values():
             print(contact)
 
 

@@ -38,7 +38,7 @@ class Adresse(BaseDirectusModel):
     Code_postal: str
     Ville: str
     Pays: str
-    Coordonnees: Coordinate
+    Coordonnees: Optional[Coordinate | None] = None
 
     def to_vcard(self) -> VAddress:
         adr = VAddress(
@@ -51,7 +51,7 @@ class Adresse(BaseDirectusModel):
 
 
 class ContactsAdresse(BaseModel):
-    id: int
+    id: Optional[int | None] = None
     Contacts_id: int
     Adresse_id: int
     Type: str
@@ -61,17 +61,17 @@ class Experience(BaseDirectusModel):
     Contact: int
     Type: str
     Organisation: int
-    Date_debut: date
-    Date_fin: date | None
+    Date_debut: Optional[date | None] = None
+    Date_fin: Optional[date | None] = None
     Intitule: str
-    Description: str | None
+    Description: Optional[str | None] = None
 
 
 class Organisation(BaseDirectusModel):
     Nom: str
-    Site_web: str | None
+    Site_web: Optional[str | None] = None
     Type: str
-    Adresse: List[int]
+    Adresse: List[int] = []
 
 
 class OrganisationsAdresse(BaseModel):

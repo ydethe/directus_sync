@@ -1,4 +1,4 @@
-from typing import Dict, Iterator, List
+from typing import Dict, List
 
 from pydantic import BaseModel
 
@@ -37,7 +37,87 @@ class DirectusDatabase(BaseModel):
     telephones: Dict[int, Telephone] = {}
     emails: Dict[int, Email] = {}
 
-    def load_from_icloud(self, config: Config) -> Iterator[Contact]:
+    def list_contact_ids(self) -> List[int]:
+        return list(self.contacts.keys())
+
+    def list_adresses_ids(self) -> List[int]:
+        return list(self.adresses.keys())
+
+    def list_contact_adresses_ids(self) -> List[int]:
+        return list(self.contact_adresses.keys())
+
+    def list_experiences_ids(self) -> List[int]:
+        return list(self.experiences.keys())
+
+    def list_organisations_ids(self) -> List[int]:
+        return list(self.organisations.keys())
+
+    def list_organisation_adresses_ids(self) -> List[int]:
+        return list(self.organisation_adresses.keys())
+
+    def list_telephones_ids(self) -> List[int]:
+        return list(self.telephones.keys())
+
+    def list_emails_ids(self) -> List[int]:
+        return list(self.emails.keys())
+
+    def insert_contact(self, contact: Contact) -> int:
+        lids = self.list_contact_ids()
+        newid = max(lids) + 1 if len(lids) > 0 else 1 if len(lids) > 0 else 1
+        contact.id = newid
+        self.contacts[newid] = contact
+        return newid
+
+    def insert_adresse(self, adresse: Adresse) -> int:
+        lids = self.list_adresses_ids()
+        newid = max(lids) + 1 if len(lids) > 0 else 1
+        adresse.id = newid
+        self.adresses[newid] = adresse
+        return newid
+
+    def insert_contact_adresse(self, contact_adresses: ContactsAdresse) -> int:
+        lids = self.list_contact_adresses_ids()
+        newid = max(lids) + 1 if len(lids) > 0 else 1
+        contact_adresses.id = newid
+        self.contact_adresses[newid] = contact_adresses
+        return newid
+
+    def insert_experience(self, experience: Experience) -> int:
+        lids = self.list_experiences_ids()
+        newid = max(lids) + 1 if len(lids) > 0 else 1
+        experience.id = newid
+        self.experiences[newid] = experience
+        return newid
+
+    def insert_organisation(self, organisation: Organisation) -> int:
+        lids = self.list_organisations_ids()
+        newid = max(lids) + 1 if len(lids) > 0 else 1
+        organisation.id = newid
+        self.organisations[newid] = organisation
+        return newid
+
+    def insert_organisation_adresse(self, organisation_adresse: OrganisationsAdresse) -> int:
+        lids = self.list_organisation_adresses_ids()
+        newid = max(lids) + 1 if len(lids) > 0 else 1
+        organisation_adresse.id = newid
+        self.organisation_adresses[newid] = organisation_adresse
+        return newid
+
+    def insert_telephone(self, telephone: Telephone) -> int:
+        lids = self.list_telephones_ids()
+        newid = max(lids) + 1 if len(lids) > 0 else 1
+        telephone.id = newid
+        self.telephones[newid] = telephone
+        return newid
+
+    def insert_email(self, email: Email) -> int:
+        lids = self.list_emails_ids()
+        newid = max(lids) + 1 if len(lids) > 0 else 1
+        email.id = newid
+        self.emails[newid] = email
+        return newid
+
+    def load_from_icloud(self, config: Config):
         for icontact in read_icloud_contacts(config):
             filtered_url: List[str]
             if icontact.urls is None:
@@ -61,10 +141,58 @@ class DirectusDatabase(BaseModel):
                 Photo=icontact.photo.url if icontact.photo is not None else None,
                 # TODO Download photo raw bytes
                 # TODO Fill other directus tables
-                # Adresses=[adr for adr in icontact.streetAddresses]
             )
 
-            yield contact
+            cid = self.insert_contact(contact)
+
+            # Storing addresses
+            for iadr in icontact.streetAddresses:
+                adr = Adresse(
+                    Adresse=iadr.field.street,
+                    Code_postal=iadr.field.postalCode,
+                    Ville=iadr.field.city,
+                    Pays=iadr.field.country,
+                )
+                aid = self.insert_adresse(adr)
+                con_adr = ContactsAdresse(Contacts_id=cid, Adresse_id=aid, Type=iadr.label)
+                caid = self.insert_contact_adresse(con_adr)
+                contact.Adresses.append(caid)
+
+            # Storing last experience
+            if icontact.companyName is not None and icontact.companyName != "":
+                orgid = None
+                for eorgid in self.organisations.keys():
+                    if icontact.companyName == self.organisations[eorgid]:
+                        orgid = eorgid
+
+                if orgid is None:
+                    orga = Organisation(
+                        Nom=icontact.companyName,
+                        Type="Entreprise",  # TODO Check enum
+                    )
+                    orgid = self.insert_organisation(orga)
+
+                expe = Experience(
+                    Contact=cid,
+                    Type="Entreprise",  # TODO Check enum
+                    Organisation=orgid,
+                    Intitule=icontact.jobTitle,
+                )
+                self.insert_experience(expe)
+
+            # Storing telephones
+            if icontact.phones is not None:
+                for itel in icontact.phones:
+                    tel = Telephone(
+                        Telephone=itel.field, Contact=cid, Prefere=False, Type=itel.label
+                    )
+                    self.insert_telephone(tel)
+
+            # Storing emails
+            if icontact.emailAddresses is not None:
+                for imail in icontact.emailAddresses:
+                    mail = Email(Email=imail.field, Contact=cid, Prefere=False, Type=imail.label)
+                    self.insert_email(mail)
 
     def load_from_directus(self, config: Config):
         for contact in read_contacts(config):
