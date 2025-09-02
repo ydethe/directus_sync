@@ -60,6 +60,9 @@ class Adresse(BaseDirectusModel):
     Pays: str
     Coordonnees: Optional[Coordinate | None] = None
 
+    def __str__(self) -> str:
+        return f"{self.Adresse}, {self.Code_postal}, {self.Ville}, {self.Pays}"
+
     def to_vcard(self) -> VAddress:
         adr = VAddress(
             street=self.Adresse,

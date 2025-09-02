@@ -18,13 +18,7 @@ from .models import (
 )
 from .directus_backend import (
     upsert_adresse,
-    upsert_contact,
     upsert_contact_adresse,
-    upsert_email,
-    upsert_experience,
-    upsert_orga_adresse,
-    upsert_organisation,
-    upsert_telephone,
     read_contacts,
     read_adresses,
     read_contact_adresses,
@@ -78,6 +72,13 @@ class DirectusDatabase(BaseModel):
         return newid
 
     def insert_adresse(self, adresse: Adresse) -> int:
+        sadr = str(adresse)
+        for existing_adr_key in self.adresses.keys():
+            existing_adr = self.adresses[existing_adr_key]
+            sexisting_adr = str(existing_adr)
+            if sexisting_adr == sadr:
+                return existing_adr_key
+
         lids = self.list_adresses_ids()
         newid = max(lids) + 1 if len(lids) > 0 else 1
         adresse.id = newid
@@ -205,14 +206,14 @@ class DirectusDatabase(BaseModel):
                     self.insert_email(mail)
 
     def upsert_directus(self, config: Config):
-        upsert_contact(config, self.contacts.values())
+        # upsert_contact(config, self.contacts.values())
         upsert_adresse(config, self.adresses.values())
-        upsert_email(config, self.emails.values())
-        upsert_organisation(config, self.organisations.values())
-        upsert_telephone(config, self.telephones.values())
-        upsert_experience(config, self.experiences.values())
+        # upsert_email(config, self.emails.values())
+        # upsert_organisation(config, self.organisations.values())
+        # upsert_telephone(config, self.telephones.values())
+        # upsert_experience(config, self.experiences.values())
         upsert_contact_adresse(config, self.contact_adresses.values())
-        upsert_orga_adresse(config, self.organisation_adresses.values())
+        # upsert_orga_adresse(config, self.organisation_adresses.values())
 
     def load_from_directus(self, config: Config):
         for contact in read_contacts(config):
