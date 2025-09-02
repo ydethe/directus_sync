@@ -1,9 +1,11 @@
 import base64
 from datetime import date, datetime
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
+from enum import Enum
+
 from pydantic import HttpUrl, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from enum import Enum
+import gender_guesser.detector as gender
 
 from .vcard import Gender, Name, VCard
 from .vcard import Address as VAddress
@@ -21,12 +23,12 @@ class CiviliteEnum(str, Enum):
 
 
 class ParticuleEnum(str, Enum):
-    NONE = "-"
-    DE = "de"
-    DU = "du"
-    DEL = "de l'"
-    DELA = "de la"
-    LE = "le"
+    NONE = " "
+    DE = " de "
+    DU = " du "
+    DEL = " de l'"
+    DELA = " de la "
+    LE = " le "
 
 
 class Config(BaseSettings):
@@ -281,3 +283,49 @@ class ICloudContact(BaseModel):
     birthday: Optional[date | None] = None
     dates: Optional[List[ICloudDate]] = []
     whitelisted: Optional[bool] = True
+
+    def analyse_name(self) -> Tuple[CiviliteEnum, str, ParticuleEnum, str]:
+        d = gender.Detector()
+        Prenom = self.firstName if self.firstName is not None else ""
+        g = d.get_gender(Prenom)
+        if g == "male" or g == "andy":
+            Civilite = CiviliteEnum.MR
+        else:
+            Civilite = CiviliteEnum.MME
+
+        Nom: str = self.lastName.strip().title() if self.lastName is not None else ""
+        NomLow = Nom.lower()
+        if NomLow.startswith("de "):
+            Particule = ParticuleEnum.DE
+            Nom = Nom[3:]
+        elif NomLow.endswith(" (de)"):
+            Particule = ParticuleEnum.DE
+            Nom = Nom[:-5]
+        elif NomLow.startswith("du "):
+            Particule = ParticuleEnum.DU
+            Nom = Nom[3:]
+        elif NomLow.endswith(" (du)"):
+            Particule = ParticuleEnum.DU
+            Nom = Nom[:-5]
+        elif NomLow.startswith("le "):
+            Particule = ParticuleEnum.LE
+            Nom = Nom[3:]
+        elif NomLow.endswith(" (le)"):
+            Particule = ParticuleEnum.LE
+            Nom = Nom[:-5]
+        elif NomLow.startswith("de l'"):
+            Particule = ParticuleEnum.DEL
+            Nom = Nom[5:]
+        elif NomLow.endswith(" (de l')"):
+            Particule = ParticuleEnum.DEL
+            Nom = Nom[:-8]
+        elif NomLow.startswith("de la "):
+            Particule = ParticuleEnum.DELA
+            Nom = Nom[6:]
+        elif NomLow.endswith(" (de la)"):
+            Particule = ParticuleEnum.DELA
+            Nom = Nom[:-8]
+        else:
+            Particule = ParticuleEnum.NONE
+
+        return Civilite, Prenom, Particule, Nom

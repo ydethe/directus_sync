@@ -8,7 +8,6 @@ import re
 
 from pydantic import BaseModel, AnyUrl, EmailStr, field_validator, model_validator
 
-
 # -----------------------------
 # Helpers & Enums
 # -----------------------------
