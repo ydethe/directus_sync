@@ -3,11 +3,29 @@ from datetime import date, datetime
 from typing import Dict, List, Optional
 from pydantic import HttpUrl, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from enum import Enum
 
 from .vcard import Gender, Name, VCard
 from .vcard import Address as VAddress
 from .vcard import Telephone as VTelephone
 from .vcard import Email as VEmail
+
+
+class CiviliteEnum(str, Enum):
+    MR = "Mr"
+    MME = "Mme"
+    MLLE = "Mlle"
+    FRERE = "Frère"
+    SOEUR = "Soeur"
+    PERE = "Père"
+
+
+class ParticuleEnum(str, Enum):
+    NONE = "-"
+    DE = "de"
+    DU = "du"
+    DEL = "de l'"
+    DELA = "de la"
 
 
 class Config(BaseSettings):
@@ -106,7 +124,7 @@ class Contact(BaseDirectusModel):
     Nom: str
     Prenom: str
     Particule: str
-    Civilite: str
+    Civilite: CiviliteEnum
     Nom_de_naissance: Optional[str] = ""
     Date_de_naissance: Optional[date | None] = None
     Site_web: Optional[str] = ""
@@ -175,14 +193,14 @@ class Contact(BaseDirectusModel):
             n=Name(
                 family=f"{self.Particule}{self.Nom}".strip(),
                 given=self.Prenom,
-                prefixes=[self.Civilite],
+                prefixes=[self.Civilite.value],
             ),
             anniversary=self.Date_de_naissance,
-            gender=Gender.M if self.Civilite in ["Mr", "Frère", "Père"] else Gender.F,
+            gender=Gender.M if self.Civilite.value in ["Mr", "Frère", "Père"] else Gender.F,
             adr=list_adr,
             tel=list_tel,
             email=list_mail,
-            title=self.Civilite,
+            title=self.Civilite.value,
             role=role,
         )
         if self.Photo_Content is not None and len(self.Photo_Content) > 0:

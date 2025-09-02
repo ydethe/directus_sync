@@ -27,8 +27,9 @@ class TestDirectusSync(unittest.TestCase):
 
         db = DirectusDatabase()
         db.load_from_icloud(config)
-        for contact in db.contacts.values():
-            print(contact)
+        db.upsert_directus(config)
+        # for contact in db.contacts.values():
+        #     print(contact)
 
 
 if __name__ == "__main__":

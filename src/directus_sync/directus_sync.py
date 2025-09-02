@@ -1,10 +1,12 @@
 from typing import Dict, List
 
 from pydantic import BaseModel
+import gender_guesser.detector as gender
 
 from .icloud_contacts import read_icloud_contacts
 from .vcard import VCard
 from .models import (
+    CiviliteEnum,
     Adresse,
     Config,
     Contact,
@@ -16,6 +18,7 @@ from .models import (
     Telephone,
 )
 from .directus_backend import (
+    upsert_contact,
     read_contacts,
     read_adresses,
     read_contact_adresses,
@@ -118,6 +121,8 @@ class DirectusDatabase(BaseModel):
         return newid
 
     def load_from_icloud(self, config: Config):
+        d = gender.Detector()
+
         for icontact in read_icloud_contacts(config):
             filtered_url: List[str]
             if icontact.urls is None:
@@ -127,13 +132,48 @@ class DirectusDatabase(BaseModel):
                     iurl.field for iurl in icontact.urls if not iurl.field.startswith("uphabit://")
                 ]
 
+            Prenom = icontact.firstName if icontact.firstName is not None else ""
+            g = d.get_gender(Prenom)
+            if g == "male" or g == "andy":
+                Civilite = CiviliteEnum.MR
+            else:
+                Civilite = CiviliteEnum.MME
+
+            Nom: str = icontact.lastName.strip().title() if icontact.lastName is not None else ""
+            NomLow = Nom.lower()
+            if NomLow.startswith("de "):
+                Particule = " de "
+                Nom = Nom[3:]
+            elif NomLow.endswith(" (de)"):
+                Particule = " de "
+                Nom = Nom[:-5]
+            elif NomLow.startswith("du "):
+                Particule = " du "
+                Nom = Nom[3:]
+            elif NomLow.endswith(" (du)"):
+                Particule = " du "
+                Nom = Nom[:-5]
+            elif NomLow.startswith("de l'"):
+                Particule = " de l'"
+                Nom = Nom[5:]
+            elif NomLow.endswith(" (de l')"):
+                Particule = " de l'"
+                Nom = Nom[:-8]
+            elif NomLow.startswith("de la "):
+                Particule = " de la "
+                Nom = Nom[6:]
+            elif NomLow.endswith(" (de la)"):
+                Particule = " de la "
+                Nom = Nom[:-8]
+            else:
+                Particule = " "
+
             contact = Contact(
-                Nom=icontact.lastName if icontact.lastName is not None else "",
-                Prenom=icontact.firstName if icontact.firstName is not None else "",
-                # TODO Improve Particule detection from iCloud
-                Particule="",
+                Nom=Nom,
+                Prenom=Prenom,
+                Particule=Particule,
                 # TODO Improve Civilite detection from iCloud
-                Civilite="",
+                Civilite=Civilite,
                 Nom_de_naissance="",
                 Date_de_naissance=icontact.birthday,
                 Site_web=filtered_url[0] if len(filtered_url) > 0 else "",
@@ -193,6 +233,9 @@ class DirectusDatabase(BaseModel):
                 for imail in icontact.emailAddresses:
                     mail = Email(Email=imail.field, Contact=cid, Prefere=False, Type=imail.label)
                     self.insert_email(mail)
+
+    def upsert_directus(self, config: Config):
+        upsert_contact(config, self.contacts.values())
 
     def load_from_directus(self, config: Config):
         for contact in read_contacts(config):

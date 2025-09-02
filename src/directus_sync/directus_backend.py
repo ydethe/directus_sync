@@ -1,5 +1,8 @@
+from datetime import date, datetime
 from typing import Any, Callable, Dict, Iterator, List, TypeVar
 import requests
+
+from tqdm import tqdm
 
 from .models import (
     Config,
@@ -33,6 +36,22 @@ def request_asset(config: Config, asset_id: str | None) -> bytes:
         return b""
 
 
+def upsert_collection(config: Config, collection: str, items: List[Dict[Any, Any]]):
+    for item in tqdm(items):
+        res = requests.post(
+            f"{config.directus_url}/items/{collection}",
+            params={"upsert": "id"},
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {config.directus_token}",
+            },
+            json=item,
+        )
+        assert res.status_code == 200
+
+    pass
+
+
 def request_collection(config: Config, collection: str) -> List[Dict[Any, Any]]:
     # https://directus.io/docs/getting-started/use-the-api
     res = requests.get(
@@ -50,6 +69,7 @@ def read_item(
     data = request_collection(config, collection=collection)
     for dat in data:
         item = model_factory(dat)
+        item.model_dump()
         yield item
 
 
@@ -101,3 +121,26 @@ def read_telephone(config: Config) -> Iterator[Telephone]:
 def read_email(config: Config) -> Iterator[Email]:
     for email in read_item(config, collection="Email", model_factory=Email.model_validate):
         yield email
+
+
+def upsert_contact(config: Config, contacts: List[Contact]):
+    items = []
+    for con in contacts:
+        item = con.model_dump()
+        item.pop("Photo_Content", None)
+        item.pop("Photo", None)
+        item.pop("Adresses", None)
+        for k in list(item.keys()):
+            if item[k] is None or item[k] == "":
+                item.pop(k)
+            elif isinstance(item[k], datetime):
+                dt: datetime = item[k]
+                item[k] = dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            elif isinstance(item[k], date):
+                dt: date = item[k]
+                item[k] = dt.strftime("%Y-%m-%dT00:00:00.000Z")
+        # '2025-09-01T12:05:03.252Z'
+        # json.dumps(item)
+        items.append(item)
+
+    upsert_collection(config, "Contacts", items)
