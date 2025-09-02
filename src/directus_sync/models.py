@@ -8,6 +8,7 @@ from pydantic import HttpUrl, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from geopy.location import Location
 import diskcache as dc
+import gender_guesser.detector as gender  # type: ignore
 
 from . import logger, geolocator
 from .vcard import Gender, Name, VCard
@@ -292,28 +293,30 @@ class ICloudContact(BaseModel):
     nickName: Optional[str] = ""
     isCompany: Optional[bool] = False
     isGuardianApproved: Optional[bool] = True
-    streetAddresses: Optional[List[ICloudAddresse]] = []
-    urls: Optional[List[ICloudUrl]] = []
+    streetAddresses: List[ICloudAddresse] = []
+    urls: List[ICloudUrl] = []
     normalized: Optional[str] = ""
     jobTitle: Optional[str] = ""
-    phones: Optional[List[ICloudphones]] = []
+    phones: List[ICloudphones] = []
     etag: Optional[str] = ""
-    emailAddresses: Optional[List[ICloudEmail]] = []
+    emailAddresses: List[ICloudEmail] = []
     middleName: Optional[str] = ""
     contactId: Optional[str] = ""
     companyName: Optional[str] = ""
-    relatedNames: Optional[List[ICloudRelatedName]] = []
+    relatedNames: List[ICloudRelatedName] = []
     lastName: Optional[str] = ""
     firstName: Optional[str] = ""
     photo: Optional[ICloudPhoto | None] = None
     notes: Optional[str] = ""
     birthday: Optional[date | None] = None
-    dates: Optional[List[ICloudDate]] = []
+    dates: List[ICloudDate] = []
     whitelisted: Optional[bool] = True
 
-    def analyse_name(self, detector) -> Tuple[CiviliteEnum, str, ParticuleEnum, str]:
+    def analyse_name(
+        self, detector: gender.Detector
+    ) -> Tuple[CiviliteEnum, str, ParticuleEnum, str]:
         Prenom = self.firstName if self.firstName is not None else ""
-        g = detector.get_gender(Prenom)
+        g = detector.get_gender(Prenom)  # type: ignore
         if g == "male" or g == "andy":
             Civilite = CiviliteEnum.MR
         else:

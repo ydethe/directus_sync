@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Fixed
 
+- Fixed organizations adresses ([1d6e856](https://github.com/ydethe/directus_sync/commit/1d6e856ba9be70e79af1a4c816736705b3255dcd) by Yann de The).
 - Fixed adresse duplicate when pserting directus ([bf3761a](https://github.com/ydethe/directus_sync/commit/bf3761a1275aff7b3999ec834abd7af8da1dfbac) by Yann de The).
 
 <!-- insertion marker -->

@@ -1,5 +1,6 @@
 from datetime import date, datetime
-from typing import Any, Callable, Dict, Iterator, List, TypeVar
+from typing import Any, Callable, Dict, Iterable, Iterator, List, TypeVar
+from pydantic import BaseModel
 import requests
 
 from tqdm import tqdm
@@ -18,7 +19,7 @@ from .models import (
 )
 
 
-T = TypeVar("T")
+T = TypeVar("T", bound=BaseModel)
 
 
 def request_asset(config: Config, asset_id: str | None) -> bytes:
@@ -37,7 +38,7 @@ def request_asset(config: Config, asset_id: str | None) -> bytes:
         return b""
 
 
-def upsert_collection(config: Config, collection: str, items: List[Dict[Any, Any]]):
+def upsert_collection(config: Config, collection: str, items: Iterable[Dict[Any, Any]]):
     for item in tqdm(items):
         res = requests.post(
             f"{config.directus_url}/items/{collection}",
@@ -125,8 +126,8 @@ def read_email(config: Config) -> Iterator[Email]:
         yield email
 
 
-def upsert_contact(config: Config, contacts: List[Contact]):
-    items = []
+def upsert_contact(config: Config, contacts: Iterable[Contact]):
+    items: List[Dict[str, Any]] = []
     for con in contacts:
         item = con.model_dump()
         item.pop("Photo_Content", None)
@@ -136,8 +137,8 @@ def upsert_contact(config: Config, contacts: List[Contact]):
             if item[k] is None or item[k] == "":
                 item.pop(k)
             elif isinstance(item[k], datetime):
-                dt: datetime = item[k]
-                item[k] = dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                dtt: datetime = item[k]
+                item[k] = dtt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             elif isinstance(item[k], date):
                 dt: date = item[k]
                 item[k] = dt.strftime("%Y-%m-%dT00:00:00.000Z")
@@ -148,8 +149,8 @@ def upsert_contact(config: Config, contacts: List[Contact]):
     upsert_collection(config, "Contacts", items)
 
 
-def upsert_adresse(config: Config, adresses: List[Adresse]):
-    items = []
+def upsert_adresse(config: Config, adresses: Iterable[Adresse]):
+    items: List[Dict[str, Any]] = []
     for adr in adresses:
         adr.compute_coordinates()
 
@@ -158,8 +159,8 @@ def upsert_adresse(config: Config, adresses: List[Adresse]):
             if item[k] is None or item[k] == "":
                 item.pop(k)
             elif isinstance(item[k], datetime):
-                dt: datetime = item[k]
-                item[k] = dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                dtt: datetime = item[k]
+                item[k] = dtt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             elif isinstance(item[k], date):
                 dt: date = item[k]
                 item[k] = dt.strftime("%Y-%m-%dT00:00:00.000Z")
@@ -170,8 +171,8 @@ def upsert_adresse(config: Config, adresses: List[Adresse]):
     upsert_collection(config, "Adresse", items)
 
 
-def upsert_email(config: Config, emails: List[Email]):
-    items = []
+def upsert_email(config: Config, emails: Iterable[Email]):
+    items: List[Dict[str, Any]] = []
     for mail in emails:
         item = mail.model_dump()
         for k in list(item.keys()):
@@ -183,8 +184,8 @@ def upsert_email(config: Config, emails: List[Email]):
     upsert_collection(config, "Email", items)
 
 
-def upsert_experience(config: Config, experiences: List[Experience]):
-    items = []
+def upsert_experience(config: Config, experiences: Iterable[Experience]):
+    items: List[Dict[str, Any]] = []
     for expe in experiences:
         item = expe.model_dump()
         for k in list(item.keys()):
@@ -196,8 +197,8 @@ def upsert_experience(config: Config, experiences: List[Experience]):
     upsert_collection(config, "Experience", items)
 
 
-def upsert_organisation(config: Config, organisations: List[Organisation]):
-    items = []
+def upsert_organisation(config: Config, organisations: Iterable[Organisation]):
+    items: List[Dict[str, Any]] = []
     for orga in organisations:
         item = orga.model_dump()
         for k in list(item.keys()):
@@ -209,8 +210,8 @@ def upsert_organisation(config: Config, organisations: List[Organisation]):
     upsert_collection(config, "Organisation", items)
 
 
-def upsert_telephone(config: Config, telephones: List[Telephone]):
-    items = []
+def upsert_telephone(config: Config, telephones: Iterable[Telephone]):
+    items: List[Dict[str, Any]] = []
     for tel in telephones:
         item = tel.model_dump()
         for k in list(item.keys()):
@@ -222,8 +223,8 @@ def upsert_telephone(config: Config, telephones: List[Telephone]):
     upsert_collection(config, "Telephone", items)
 
 
-def upsert_contact_adresse(config: Config, contact_adresse: List[ContactsAdresse]):
-    items = []
+def upsert_contact_adresse(config: Config, contact_adresse: Iterable[ContactsAdresse]):
+    items: List[Dict[str, Any]] = []
     for con_adr in contact_adresse:
         item = con_adr.model_dump()
         for k in list(item.keys()):
@@ -235,8 +236,8 @@ def upsert_contact_adresse(config: Config, contact_adresse: List[ContactsAdresse
     upsert_collection(config, "Contacts_Adresse", items)
 
 
-def upsert_orga_adresse(config: Config, orga_adresse: List[OrganisationsAdresse]):
-    items = []
+def upsert_orga_adresse(config: Config, orga_adresse: Iterable[OrganisationsAdresse]):
+    items: List[Dict[str, Any]] = []
     for org_adr in orga_adresse:
         item = org_adr.model_dump()
         for k in list(item.keys()):

@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from pydantic import BaseModel
-import gender_guesser.detector as gender
+import gender_guesser.detector as gender  # type: ignore
 
 from .icloud_contacts import read_icloud_contacts
 from .vcard import VCard
@@ -25,7 +25,14 @@ from .directus_backend import (
     read_organisation,
     read_organisation_adresses,
     read_telephone,
+    upsert_adresse,
+    upsert_contact,
+    upsert_contact_adresse,
+    upsert_email,
+    upsert_experience,
     upsert_orga_adresse,
+    upsert_organisation,
+    upsert_telephone,
 )
 
 
@@ -225,13 +232,13 @@ class DirectusDatabase(BaseModel):
                     self.insert_email(mail)
 
     def upsert_directus(self, config: Config):
-        # upsert_contact(config, self.contacts.values())
-        # upsert_adresse(config, self.adresses.values())
-        # upsert_email(config, self.emails.values())
-        # upsert_organisation(config, self.organisations.values())
-        # upsert_telephone(config, self.telephones.values())
-        # upsert_experience(config, self.experiences.values())
-        # upsert_contact_adresse(config, self.contact_adresses.values())
+        upsert_contact(config, self.contacts.values())
+        upsert_adresse(config, self.adresses.values())
+        upsert_email(config, self.emails.values())
+        upsert_organisation(config, self.organisations.values())
+        upsert_telephone(config, self.telephones.values())
+        upsert_experience(config, self.experiences.values())
+        upsert_contact_adresse(config, self.contact_adresses.values())
         upsert_orga_adresse(config, self.organisation_adresses.values())
 
     def load_from_directus(self, config: Config):
