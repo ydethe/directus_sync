@@ -1,6 +1,7 @@
 from typing import Dict, List
 
 from pydantic import BaseModel
+import gender_guesser.detector as gender
 
 from .icloud_contacts import read_icloud_contacts
 from .vcard import VCard
@@ -16,7 +17,14 @@ from .models import (
     Telephone,
 )
 from .directus_backend import (
+    upsert_adresse,
     upsert_contact,
+    upsert_contact_adresse,
+    upsert_email,
+    upsert_experience,
+    upsert_orga_adresse,
+    upsert_organisation,
+    upsert_telephone,
     read_contacts,
     read_adresses,
     read_contact_adresses,
@@ -119,6 +127,7 @@ class DirectusDatabase(BaseModel):
         return newid
 
     def load_from_icloud(self, config: Config):
+        d = gender.Detector()
         for icontact in read_icloud_contacts(config):
             filtered_url: List[str]
             if icontact.urls is None:
@@ -128,7 +137,7 @@ class DirectusDatabase(BaseModel):
                     iurl.field for iurl in icontact.urls if not iurl.field.startswith("uphabit://")
                 ]
 
-            Civilite, Prenom, Particule, Nom = icontact.analyse_name()
+            Civilite, Prenom, Particule, Nom = icontact.analyse_name(d)
 
             contact = Contact(
                 Nom=Nom,
@@ -197,6 +206,13 @@ class DirectusDatabase(BaseModel):
 
     def upsert_directus(self, config: Config):
         upsert_contact(config, self.contacts.values())
+        upsert_adresse(config, self.adresses.values())
+        upsert_email(config, self.emails.values())
+        upsert_organisation(config, self.organisations.values())
+        upsert_telephone(config, self.telephones.values())
+        upsert_experience(config, self.experiences.values())
+        upsert_contact_adresse(config, self.contact_adresses.values())
+        upsert_orga_adresse(config, self.organisation_adresses.values())
 
     def load_from_directus(self, config: Config):
         for contact in read_contacts(config):

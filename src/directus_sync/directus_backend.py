@@ -4,6 +4,7 @@ import requests
 
 from tqdm import tqdm
 
+from . import logger
 from .models import (
     Config,
     Contact,
@@ -47,7 +48,8 @@ def upsert_collection(config: Config, collection: str, items: List[Dict[Any, Any
             },
             json=item,
         )
-        assert res.status_code == 200
+        if res.status_code != 200:
+            logger.error(res.content)
 
     pass
 
@@ -144,3 +146,101 @@ def upsert_contact(config: Config, contacts: List[Contact]):
         items.append(item)
 
     upsert_collection(config, "Contacts", items)
+
+
+def upsert_adresse(config: Config, adresses: List[Adresse]):
+    items = []
+    for adr in adresses:
+        item = adr.model_dump()
+        for k in list(item.keys()):
+            if item[k] is None or item[k] == "":
+                item.pop(k)
+            elif isinstance(item[k], datetime):
+                dt: datetime = item[k]
+                item[k] = dt.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            elif isinstance(item[k], date):
+                dt: date = item[k]
+                item[k] = dt.strftime("%Y-%m-%dT00:00:00.000Z")
+        # '2025-09-01T12:05:03.252Z'
+        # json.dumps(item)
+        items.append(item)
+
+    upsert_collection(config, "Adresse", items)
+
+
+def upsert_email(config: Config, emails: List[Email]):
+    items = []
+    for mail in emails:
+        item = mail.model_dump()
+        for k in list(item.keys()):
+            if item[k] is None or item[k] == "":
+                item.pop(k)
+
+        items.append(item)
+
+    upsert_collection(config, "Email", items)
+
+
+def upsert_experience(config: Config, experiences: List[Experience]):
+    items = []
+    for expe in experiences:
+        item = expe.model_dump()
+        for k in list(item.keys()):
+            if item[k] is None or item[k] == "":
+                item.pop(k)
+
+        items.append(item)
+
+    upsert_collection(config, "Experience", items)
+
+
+def upsert_organisation(config: Config, organisations: List[Organisation]):
+    items = []
+    for orga in organisations:
+        item = orga.model_dump()
+        for k in list(item.keys()):
+            if item[k] is None or item[k] == "":
+                item.pop(k)
+
+        items.append(item)
+
+    upsert_collection(config, "Organisation", items)
+
+
+def upsert_telephone(config: Config, telephones: List[Telephone]):
+    items = []
+    for tel in telephones:
+        item = tel.model_dump()
+        for k in list(item.keys()):
+            if item[k] is None or item[k] == "":
+                item.pop(k)
+
+        items.append(item)
+
+    upsert_collection(config, "Telephone", items)
+
+
+def upsert_contact_adresse(config: Config, contact_adresse: List[ContactsAdresse]):
+    items = []
+    for con_adr in contact_adresse:
+        item = con_adr.model_dump()
+        for k in list(item.keys()):
+            if item[k] is None or item[k] == "":
+                item.pop(k)
+
+        items.append(item)
+
+    upsert_collection(config, "Contacts_Adresse", items)
+
+
+def upsert_orga_adresse(config: Config, orga_adresse: List[OrganisationsAdresse]):
+    items = []
+    for org_adr in orga_adresse:
+        item = org_adr.model_dump()
+        for k in list(item.keys()):
+            if item[k] is None or item[k] == "":
+                item.pop(k)
+
+        items.append(item)
+
+    upsert_collection(config, "Organisation_Adresse", items)

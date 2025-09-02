@@ -5,7 +5,6 @@ from enum import Enum
 
 from pydantic import HttpUrl, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
-import gender_guesser.detector as gender
 
 from .vcard import Gender, Name, VCard
 from .vcard import Address as VAddress
@@ -284,10 +283,9 @@ class ICloudContact(BaseModel):
     dates: Optional[List[ICloudDate]] = []
     whitelisted: Optional[bool] = True
 
-    def analyse_name(self) -> Tuple[CiviliteEnum, str, ParticuleEnum, str]:
-        d = gender.Detector()
+    def analyse_name(self, detector) -> Tuple[CiviliteEnum, str, ParticuleEnum, str]:
         Prenom = self.firstName if self.firstName is not None else ""
-        g = d.get_gender(Prenom)
+        g = detector.get_gender(Prenom)
         if g == "male" or g == "andy":
             Civilite = CiviliteEnum.MR
         else:
