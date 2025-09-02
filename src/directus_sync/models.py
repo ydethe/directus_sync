@@ -26,6 +26,7 @@ class ParticuleEnum(str, Enum):
     DU = "du"
     DEL = "de l'"
     DELA = "de la"
+    LE = "le"
 
 
 class Config(BaseSettings):

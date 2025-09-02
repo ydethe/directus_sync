@@ -153,6 +153,12 @@ class DirectusDatabase(BaseModel):
             elif NomLow.endswith(" (du)"):
                 Particule = " du "
                 Nom = Nom[:-5]
+            elif NomLow.startswith("le "):
+                Particule = " le "
+                Nom = Nom[3:]
+            elif NomLow.endswith(" (le)"):
+                Particule = " le "
+                Nom = Nom[:-5]
             elif NomLow.startswith("de l'"):
                 Particule = " de l'"
                 Nom = Nom[5:]
@@ -172,7 +178,6 @@ class DirectusDatabase(BaseModel):
                 Nom=Nom,
                 Prenom=Prenom,
                 Particule=Particule,
-                # TODO Improve Civilite detection from iCloud
                 Civilite=Civilite,
                 Nom_de_naissance="",
                 Date_de_naissance=icontact.birthday,
