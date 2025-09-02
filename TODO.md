@@ -1,3 +1,2 @@
-- [src/directus_sync/directus_sync.py#L175](src/directus_sync/directus_sync.py#L175): Improve Civilite detection from iCloud
-- [src/directus_sync/directus_sync.py#L182](src/directus_sync/directus_sync.py#L182): Download photo raw bytes
-- [src/directus_sync/directus_sync.py#L183](src/directus_sync/directus_sync.py#L183): Fill other directus tables
+- [src/directus_sync/directus_sync.py#L152](src/directus_sync/directus_sync.py#L152): Download photo raw bytes
+- [src/directus_sync/directus_sync.py#L153](src/directus_sync/directus_sync.py#L153): Fill other directus tables

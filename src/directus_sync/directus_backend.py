@@ -151,6 +151,8 @@ def upsert_contact(config: Config, contacts: List[Contact]):
 def upsert_adresse(config: Config, adresses: List[Adresse]):
     items = []
     for adr in adresses:
+        adr.compute_coordinates()
+
         item = adr.model_dump()
         for k in list(item.keys()):
             if item[k] is None or item[k] == "":

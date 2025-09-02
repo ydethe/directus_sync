@@ -1,15 +1,22 @@
 import base64
 from datetime import date, datetime
+import time
 from typing import Dict, List, Optional, Tuple
 from enum import Enum
 
 from pydantic import HttpUrl, BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from geopy.location import Location
+import diskcache as dc
 
+from . import logger, geolocator
 from .vcard import Gender, Name, VCard
 from .vcard import Address as VAddress
 from .vcard import Telephone as VTelephone
 from .vcard import Email as VEmail
+
+
+cache = dc.Cache("./.mycache")
 
 
 class CiviliteEnum(str, Enum):
@@ -53,6 +60,21 @@ class Coordinate(BaseModel):
     coordinates: List[float]
 
 
+@cache.memoize()
+def geocode(address: str) -> Coordinate | None:
+    coord = None
+
+    location: Location | None = geolocator.geocode(address)  # type: ignore
+    if location is not None:
+        coord = Coordinate(type="Point", coordinates=[location.longitude, location.latitude])
+    else:
+        logger.warning(f"Failed geocoding {address}")
+
+    time.sleep(1)
+
+    return coord
+
+
 class Adresse(BaseDirectusModel):
     Adresse: str
     Code_postal: str
@@ -62,6 +84,9 @@ class Adresse(BaseDirectusModel):
 
     def __str__(self) -> str:
         return f"{self.Adresse}, {self.Code_postal}, {self.Ville}, {self.Pays}"
+
+    def compute_coordinates(self):
+        self.Coordonnees = geocode(str(self))
 
     def to_vcard(self) -> VAddress:
         adr = VAddress(
@@ -98,7 +123,7 @@ class Organisation(BaseDirectusModel):
 
 
 class OrganisationsAdresse(BaseModel):
-    id: int
+    id: Optional[int | None] = None
     Organisation_id: int
     Adresse_id: int
 

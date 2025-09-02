@@ -17,8 +17,6 @@ from .models import (
     Telephone,
 )
 from .directus_backend import (
-    upsert_adresse,
-    upsert_contact_adresse,
     read_contacts,
     read_adresses,
     read_contact_adresses,
@@ -27,6 +25,7 @@ from .directus_backend import (
     read_organisation,
     read_organisation_adresses,
     read_telephone,
+    upsert_orga_adresse,
 )
 
 
@@ -158,6 +157,9 @@ class DirectusDatabase(BaseModel):
 
             # Storing addresses
             for iadr in icontact.streetAddresses:
+                if iadr.label == "WORK":
+                    continue
+
                 adr = Adresse(
                     Adresse=iadr.field.street,
                     Code_postal=iadr.field.postalCode,
@@ -172,16 +174,33 @@ class DirectusDatabase(BaseModel):
             # Storing last experience
             if icontact.companyName is not None and icontact.companyName != "":
                 orgid = None
+                orga = Organisation(
+                    Nom=icontact.companyName,
+                    Type="Entreprise",
+                )
+
                 for eorgid in self.organisations.keys():
                     if icontact.companyName == self.organisations[eorgid]:
                         orgid = eorgid
 
                 if orgid is None:
-                    orga = Organisation(
-                        Nom=icontact.companyName,
-                        Type="Entreprise",
-                    )
                     orgid = self.insert_organisation(orga)
+
+                orga.id = orgid
+                for iadr in icontact.streetAddresses:
+                    if iadr.label != "WORK":
+                        continue
+
+                    adr = Adresse(
+                        Adresse=iadr.field.street,
+                        Code_postal=iadr.field.postalCode,
+                        Ville=iadr.field.city,
+                        Pays=iadr.field.country,
+                    )
+                    aid = self.insert_adresse(adr)
+                    org_adr = OrganisationsAdresse(Organisation_id=orgid, Adresse_id=aid)
+                    self.insert_organisation_adresse(org_adr)
+                    orga.Adresse.append(aid)
 
                 expe = Experience(
                     Contact=cid,
@@ -207,13 +226,13 @@ class DirectusDatabase(BaseModel):
 
     def upsert_directus(self, config: Config):
         # upsert_contact(config, self.contacts.values())
-        upsert_adresse(config, self.adresses.values())
+        # upsert_adresse(config, self.adresses.values())
         # upsert_email(config, self.emails.values())
         # upsert_organisation(config, self.organisations.values())
         # upsert_telephone(config, self.telephones.values())
         # upsert_experience(config, self.experiences.values())
-        upsert_contact_adresse(config, self.contact_adresses.values())
-        # upsert_orga_adresse(config, self.organisation_adresses.values())
+        # upsert_contact_adresse(config, self.contact_adresses.values())
+        upsert_orga_adresse(config, self.organisation_adresses.values())
 
     def load_from_directus(self, config: Config):
         for contact in read_contacts(config):
